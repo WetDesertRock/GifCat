@@ -27,8 +27,6 @@ The basic steps goes as follows:
 You can also optionally track the progress using gif:onUpdate() (See
 documentation) and examples for usage.
 
-You will need to call gifcat.init() inside love.load(). Call
-
 ```lua
 local gifcat = require("gifcat")
 local curgif = nil
