@@ -2,6 +2,8 @@
 
 A simple module for saving gifs from LOVE 0.10.x.
 
+![1466962294](https://cloud.githubusercontent.com/assets/6189453/16363754/6f27d956-3b89-11e6-9345-71c3d822e1c8.gif)
+
 ## Installation
 Build the library by running:
 ```bash
