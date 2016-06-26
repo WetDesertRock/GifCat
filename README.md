@@ -2,7 +2,6 @@
 
 A simple module for saving gifs from LOVE 0.10.x.
 
-
 ## Installation
 Build the library by running:
 ```bash
@@ -17,6 +16,16 @@ gifcat = require("gifcat")
 ```
 
 ##Basic Usage:
+
+The basic steps goes as follows:  
+ * Init the library
+ * Update the library each frame
+ * Create a gif, and feed it a frame each frame
+ * `:close()` the gif once you are done with it.
+ * Find the gif in LOVE's application data directory
+
+You can also optionally track the progress using gif:onUpdate() (See
+documentation) and examples for usage.
 
 You will need to call gifcat.init() inside love.load(). Call
 
@@ -100,8 +109,8 @@ need to change the `GIFLIB` variable at the top of `gifcat.lua`.
 ###Giving gifcat irregular image sizes.
 If you want to give gifcat images that aren't the same size as the gif, it will
 automatically recreate the image on an internal canvas that it will use.
-By default this will leave it unmodified and just cut off excess area. You can
-make it scale by changing the mode to "scale" in `GifWriter:frame`.
+By default this will scale it. You can make it crop the image by changing the
+mode to "crop" in `GifWriter:frame`.
 
 
 ## Function Reference
