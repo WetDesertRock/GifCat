@@ -166,4 +166,4 @@ Forces the GifWriter to create a canvas for its internal use.
 ## License
 
 This library is free software; you can redistribute it and/or modify it under
-the terms of the MIT license. See [LICENSE](LICENSE) for details.
+the terms of the MIT license. See [LICENSE](https://github.com/WetDesertRock/GifCat/blob/master/gifcat.lua#L1-L19) for details.
