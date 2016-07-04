@@ -25,167 +25,10 @@ local GIFLIB = "gifcatlib"
 -- Where is this file?
 local FILE = (...)
 
-if love.arg then -- Are we in the main thread?
+assert(love.arg) -- Are we in the main thread?
 
-  --Todo:
-  -- Ring buffer so you can save the last x number of seconds
-  -- Canvas watching? (ie: only calling :update and :close)
-  -- ThreadPool
-  local _ = {}
-
-  _.init = function()
-    _.thread = love.thread.newThread(FILE:gsub("%.","/")..".lua")
-    _.channel = love.thread.getChannel("gif_imagedata")
-    _.thread:start()
-    _.gifs = {}
-  end
-
-  _.close = function()
-    _.channel:push({"quit"})
-    _.thread:wait()
-  end
-
-  _.update = function(dt)
-    for i=#_.gifs,1,-1 do
-      local gif = _.gifs[i]
-      gif:update(dt)
-      if gif.done then
-        table.remove(_.gifs,i)
-      end
-    end
-  end
-
-  _.active = function(gif)
-    return #_.gifs > 0
-  end
-
-  --More or less private, the GIF takes care of this itself
-  _.add = function(gif)
-    table.insert(_.gifs,gif)
-  end
-
-  local GifWriter = {}
-  GifWriter.__index = GifWriter
-
-  function GifWriter.new(fpath, width, height, fps, isrepeat, palettesize)
-    local self = setmetatable({}, GifWriter)
-    self.fpath = fpath
-    self.recvchannel = love.thread.getChannel("gif_recv_"..self.fpath)
-    self:setFPS(fps)
-    self.width,self.height = width or love.graphics.getWidth(),height or love.graphics.getHeight()
-    self.canvas = nil -- Defer the creation of this until we are absolutly sure we need it.
-    self.framecount = 0
-    self.writtenframes = 0
-
-    self.updatecallback = nil
-    self.finishcallback = nil
-
-    _.channel:push({"newgif",self.fpath,self.width,self.height,isrepeat,self.delay,palettesize})
-    _.add(self)
-
-    return self
-  end
-
-  function GifWriter:update(dt)
-    local msg = self.recvchannel:pop( )
-    while msg do
-      if msg == "framewritten" then
-        self.writtenframes = self.writtenframes + 1
-        if self.updatecallback then
-          self.updatecallback(self, self.writtenframes, self.framecount)
-        end
-      elseif msg == "finished" then
-        self.done = true
-        if self.finishcallback then
-          self.finishcallback(self, self.framecount)
-        end
-      end
-
-      msg = self.recvchannel:pop( )
-    end
-  end
-
-  function GifWriter:setFPS(fps)
-    self.delay = 100/(fps or love.timer.getFPS())
-    return self
-  end
-
-  function GifWriter:progress()
-    return self.writtenframes/self.framecount
-  end
-
-  function GifWriter:initCanvas()
-    if not self.canvas then
-      self.canvas = love.graphics.newCanvas(self.width,self.height)
-    end
-    return self
-  end
-
-  function GifWriter:frame(image,dt,mode)
-    self.framecount = self.framecount+1
-
-    -- Deal with imagedata (convert it to an image)
-    if image:type() == "ImageData" then
-      image = love.graphics.newImage(image)
-    end
-
-    -- Deal with out of size canvases
-    local mode = mode or "scale"
-    local finalcanvas = nil
-
-    -- if image:type() is an Image than we need to draw it to the canvas anyways for its imagedata
-    if (image:getWidth() ~= self.width or image:getHeight() ~= self.height) or image:type() == "Image" then
-      if not self.canvas then
-        self:initCanvas()
-      end
-      self.canvas:renderTo(function()
-        love.graphics.clear()
-
-        local sx,sy = 1,1
-        if mode == "scale" then
-          sx,sy = self.width/image:getWidth(),self.height/image:getHeight()
-        end
-        love.graphics.draw(image,0,0,0,sx,sy)
-        finalcanvas = self.canvas
-      end)
-    else
-      finalcanvas = image
-    end
-
-    -- Find out our delay
-    local delay = self.delay
-    if dt then
-      delay = dt*100
-    end
-
-    -- Finally send the data
-    _.channel:push({"frame",self.fpath,finalcanvas:newImageData(),math.floor(delay+0.5)})
-  end
-
-  function GifWriter:onUpdate(fn)
-    self.updatecallback = fn
-    return self
-  end
-
-  function GifWriter:onFinish(fn)
-    self.finishcallback = fn
-    return self
-  end
-
-  function GifWriter:close()
-    _.channel:push({"close",self.fpath})
-    return self
-  end
-
-  function _.newGif(...)
-    return GifWriter.new(...)
-  end
-  -- _.GifWriter = GifWriter
-
-  return _
-
-else
-  local gif = require(GIFLIB)
+local thread_code = string.format([=[
+  local gif = require(%q)
   require("love.image")
   require("love.filesystem")
   local channel = love.thread.getChannel("gif_imagedata")
@@ -217,4 +60,161 @@ else
       end
     end
   end
+]=], GIFLIB)
+
+--Todo:
+-- Ring buffer so you can save the last x number of seconds
+-- Canvas watching? (ie: only calling :update and :close)
+-- ThreadPool
+local _ = {}
+
+_.init = function()
+  _.thread = love.thread.newThread(thread_code)
+  _.channel = love.thread.getChannel("gif_imagedata")
+  _.thread:start()
+  _.gifs = {}
 end
+
+_.close = function()
+  _.channel:push({"quit"})
+  _.thread:wait()
+end
+
+_.update = function(dt)
+  for i=#_.gifs,1,-1 do
+    local gif = _.gifs[i]
+    gif:update(dt)
+    if gif.done then
+      table.remove(_.gifs,i)
+    end
+  end
+end
+
+_.active = function(gif)
+  return #_.gifs > 0
+end
+
+--More or less private, the GIF takes care of this itself
+_.add = function(gif)
+  table.insert(_.gifs,gif)
+end
+
+local GifWriter = {}
+GifWriter.__index = GifWriter
+
+function GifWriter.new(fpath, width, height, fps, isrepeat, palettesize)
+  local self = setmetatable({}, GifWriter)
+  self.fpath = fpath
+  self.recvchannel = love.thread.getChannel("gif_recv_"..self.fpath)
+  self:setFPS(fps)
+  self.width,self.height = width or love.graphics.getWidth(),height or love.graphics.getHeight()
+  self.canvas = nil -- Defer the creation of this until we are absolutly sure we need it.
+  self.framecount = 0
+  self.writtenframes = 0
+
+  self.updatecallback = nil
+  self.finishcallback = nil
+
+  _.channel:push({"newgif",self.fpath,self.width,self.height,isrepeat,self.delay,palettesize})
+  _.add(self)
+
+  return self
+end
+
+function GifWriter:update(dt)
+  local msg = self.recvchannel:pop( )
+  while msg do
+    if msg == "framewritten" then
+      self.writtenframes = self.writtenframes + 1
+      if self.updatecallback then
+        self.updatecallback(self, self.writtenframes, self.framecount)
+      end
+    elseif msg == "finished" then
+      self.done = true
+      if self.finishcallback then
+        self.finishcallback(self, self.framecount)
+      end
+    end
+
+    msg = self.recvchannel:pop( )
+  end
+end
+
+function GifWriter:setFPS(fps)
+  self.delay = 100/(fps or love.timer.getFPS())
+  return self
+end
+
+function GifWriter:progress()
+  return self.writtenframes/self.framecount
+end
+
+function GifWriter:initCanvas()
+  if not self.canvas then
+    self.canvas = love.graphics.newCanvas(self.width,self.height)
+  end
+  return self
+end
+
+function GifWriter:frame(image,dt,mode)
+  self.framecount = self.framecount+1
+
+  -- Deal with imagedata (convert it to an image)
+  if image:type() == "ImageData" then
+    image = love.graphics.newImage(image)
+  end
+
+  -- Deal with out of size canvases
+  local mode = mode or "scale"
+  local finalcanvas = nil
+
+  -- if image:type() is an Image than we need to draw it to the canvas anyways for its imagedata
+  if (image:getWidth() ~= self.width or image:getHeight() ~= self.height) or image:type() == "Image" then
+    if not self.canvas then
+      self:initCanvas()
+    end
+    self.canvas:renderTo(function()
+      love.graphics.clear()
+
+      local sx,sy = 1,1
+      if mode == "scale" then
+        sx,sy = self.width/image:getWidth(),self.height/image:getHeight()
+      end
+      love.graphics.draw(image,0,0,0,sx,sy)
+      finalcanvas = self.canvas
+    end)
+  else
+    finalcanvas = image
+  end
+
+  -- Find out our delay
+  local delay = self.delay
+  if dt then
+    delay = dt*100
+  end
+
+  -- Finally send the data
+  _.channel:push({"frame",self.fpath,finalcanvas:newImageData(),math.floor(delay+0.5)})
+end
+
+function GifWriter:onUpdate(fn)
+  self.updatecallback = fn
+  return self
+end
+
+function GifWriter:onFinish(fn)
+  self.finishcallback = fn
+  return self
+end
+
+function GifWriter:close()
+  _.channel:push({"close",self.fpath})
+  return self
+end
+
+function _.newGif(...)
+  return GifWriter.new(...)
+end
+-- _.GifWriter = GifWriter
+
+return _

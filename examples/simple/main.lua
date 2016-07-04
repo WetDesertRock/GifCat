@@ -34,7 +34,7 @@ function love.keypressed(key, touch, isrepeat)
 
   -- Optional method to just print out the progress of the gif
   curgif:onUpdate(function(gif,curframes,totalframes)
-    print(string.format("Progress: %.2f%% (%d/%d)",gif:progress()*10,curframes,totalframes))
+    print(string.format("Progress: %.2f%% (%d/%d)",gif:progress()*100,curframes,totalframes))
   end)
   curgif:onFinish(function(gif,totalframes)
     print(totalframes.." frames written")
