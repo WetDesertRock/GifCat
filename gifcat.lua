@@ -20,7 +20,7 @@
 
 
 -- Where can we find the gif.so file?
-local GIFLIB = "gifcatlib"
+local GIFLIB = "gifcatlib.so"
 
 -- Where is this file?
 local FILE = (...)
@@ -185,7 +185,7 @@ if love.arg then -- Are we in the main thread?
   return _
 
 else
-  local gif = require(GIFLIB)
+  local gif = assert(package.loadlib(GIFLIB, "luaopen_gifcatlib"))()
   require("love.image")
   require("love.filesystem")
   local channel = love.thread.getChannel("gif_imagedata")

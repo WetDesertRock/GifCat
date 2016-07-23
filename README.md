@@ -102,6 +102,11 @@ end
 
 ##Advanced Usage:
 
+###Renaming gifcatlib.so
+If you want to change the name of gifcatlib.so to gifcatlib.dll (if you are
+windows), then you will need to update the `GIFLIB` variable at the top of
+`gifcat.lua`.
+
 ###Placing the dynamic library in a different location.
 If you place the library somewhere else than the root of your project, you will
 need to change the `GIFLIB` variable at the top of `gifcat.lua`.
