@@ -42,7 +42,7 @@ function love.keypressed(key, touch, isrepeat)
     --   it down to size.
     curgif = gifcat.newGif(os.time()..".gif",400,300)
     curgif:onUpdate(function(gif,curframes,totalframes)
-      print(string.format("Progress: %f (%d/%d)",gif:progress()*10,curframes,totalframes))
+      print(string.format("Progress: %f (%d/%d)",gif:progress()*100,curframes,totalframes))
     end)
     curgif:onFinish(function(gif,totalframes)
       print(totalframes.." frames written")
@@ -70,12 +70,12 @@ function love.draw()
   end
 
   if curgif then
-    curgif:frame(love.graphics.newScreenshot())
+    love.graphics.captureScreenshot(function(screenshot) curgif:frame(screenshot) end)
 
-    love.graphics.setColor(255,0,0)
+    love.graphics.setColor(1,0,0)
     love.graphics.circle("fill",love.graphics.getWidth()-10,10,10)
   end
 
-  love.graphics.setColor(255,255,255)
+  love.graphics.setColor(1,1,1)
   love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 0, 0)
 end

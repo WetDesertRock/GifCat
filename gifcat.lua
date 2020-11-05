@@ -20,7 +20,7 @@
 
 
 -- Where can we find the gif.so file?
-local GIFLIB = "gifcatlib.so"
+local GIFLIB = "./gifcatlib.so"
 
 -- Where is this file?
 local FILE = (...)
