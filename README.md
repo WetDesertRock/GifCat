@@ -91,11 +91,11 @@ function love.draw()
     -- Show a little recording icon in the upper right hand corner. This will
     --   not get shown in the gif because it is displayed after the call to
     --   captureScreenshot()
-    love.graphics.setColor(255,0,0)
+    love.graphics.setColor(1,0,0)
     love.graphics.circle("fill",love.graphics.getWidth()-10,10,10)
   end
 
-  love.graphics.setColor(255,255,255)
+  love.graphics.setColor(1,1,1)
   love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 0, 0)
 end
 ```
