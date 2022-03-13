@@ -17,7 +17,7 @@ require the lua file:
 gifcat = require("gifcat")
 ```
 
-##Basic Usage:
+## Basic Usage:
 
 The basic steps goes as follows:  
  * Init the library
@@ -100,20 +100,20 @@ function love.draw()
 end
 ```
 
-##Advanced Usage:
+## Advanced Usage:
 
-###Renaming gifcatlib.so
+### Renaming gifcatlib.so
 If you want to change the name of gifcatlib.so to gifcatlib.dll (if you are
 windows), then you will need to update the `GIFLIB` variable at the top of
 `gifcat.lua`.
 
-###Placing the dynamic library in a different location.
+### Placing the dynamic library in a different location.
 If you place the library somewhere else than the root of your project, you will
 need to change the `GIFLIB` variable at the top of `gifcat.lua`.
 
-###Giving gifcat irregular image sizes.
+### Giving gifcat irregular image sizes.
 If you want to give gifcat images that aren't the same size as the gif, it will
-automatically recreate the image on an internal canvas that it will use.
+automatically recreate the image on an internal canvas that it will use.  
 By default this will scale it. You can make it crop the image by changing the
 mode to "crop" in `GifWriter:frame`.
 
@@ -141,7 +141,7 @@ will default to true (setting it so the gif will repeat), `palettesize` will
 default to 32.
 
 ### GifWriter:frame(image, [dt, [mode]])
-Write a frame to the gif, `image` can be either an ImageData, Image, or Canvas.
+Write a frame to the gif, `image` can be either an ImageData, Image, or Canvas.  
 Use `dt` to set a custom delay for this specific frame. Overrides the default fps
 value. `mode` is how GifWriter will deal with an incorrectly sized `image`. Set
 to `scale` to force it to scale the image.
