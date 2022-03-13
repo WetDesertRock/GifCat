@@ -34,7 +34,7 @@ function love.keypressed(key, touch, isrepeat)
 
   -- Optional method to just print out the progress of the gif
   curgif:onUpdate(function(gif,curframes,totalframes)
-    print(string.format("Progress: %.2f%% (%d/%d)",gif:progress()*10,curframes,totalframes))
+    print(string.format("Progress: %.2f%% (%d/%d)",gif:progress()*100,curframes,totalframes))
   end)
   curgif:onFinish(function(gif,totalframes)
     print(totalframes.." frames written")
@@ -73,11 +73,11 @@ function love.draw()
   -- On to the gif specific stuff
   if curgif then
     -- Save a frame to our gif.
-    curgif:frame(love.graphics.newScreenshot())
+    love.graphics.captureScreenshot(function(screenshot) curgif:frame(screenshot) end)
 
     -- Show a little recording icon in the upper right hand corner. This will
     --   not get shown in the gif because it is displayed after the call to
-    --   newScreenshot()
+    --   captureScreenshot()
     love.graphics.setColor(255,0,0)
     love.graphics.circle("fill",love.graphics.getWidth()-10,10,10)
   end
