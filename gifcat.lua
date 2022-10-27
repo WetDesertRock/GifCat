@@ -121,7 +121,7 @@ if love.arg then -- Are we in the main thread?
     return self
   end
 
-  function GifWriter:frame(image,dt,mode)
+  function GifWriter:frame(image,dt,mode,localPalette)
     self.framecount = self.framecount+1
 
     -- Deal with imagedata (convert it to an image)
@@ -132,6 +132,10 @@ if love.arg then -- Are we in the main thread?
     -- Deal with out of size canvases
     local mode = mode or "scale"
     local finalcanvas = nil
+    local _localPalette = localPalette or 1
+    if localPalette then
+      _localPalette = 1
+    end
 
     -- if image:type() is an Image than we need to draw it to the canvas anyways for its imagedata
     if (image:getWidth() ~= self.width or image:getHeight() ~= self.height) or image:type() == "Image" then
@@ -159,7 +163,7 @@ if love.arg then -- Are we in the main thread?
     end
 
     -- Finally send the data
-    _.channel:push({"frame",self.fpath,finalcanvas:newImageData(),math.floor(delay+0.5)})
+    _.channel:push({"frame",self.fpath,finalcanvas:newImageData(),math.floor(delay+0.5),_localPalette})
   end
 
   function GifWriter:onUpdate(fn)
@@ -203,7 +207,7 @@ else
         --                      fname  width   height  repeat  delay  palette size
         gifs[data[2]] = gif.new(fpath,data[3],data[4],data[5],data[6],data[7])
       elseif data[1] == "frame" then -- Add frame
-        gifs[data[2]]:frame(data[3]:getString(),data[4])
+        gifs[data[2]]:frame(data[3]:getString(),data[4],data[5])
         love.thread.getChannel("gif_recv_"..data[2]):push("framewritten")
       elseif data[1] == "close" then -- Close file
         gifs[data[2]]:close()

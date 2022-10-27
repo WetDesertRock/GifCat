@@ -140,11 +140,13 @@ default to the current fps (as returned by `love.timer.getFPS()`). `isrepeat`
 will default to true (setting it so the gif will repeat), `palettesize` will
 default to 32.
 
-### GifWriter:frame(image, [dt, [mode]])
+### GifWriter:frame(image, [dt, [mode, [localPalette]]])
 Write a frame to the gif, `image` can be either an ImageData, Image, or Canvas.  
 Use `dt` to set a custom delay for this specific frame. Overrides the default fps
 value. `mode` is how GifWriter will deal with an incorrectly sized `image`. Set
-to `scale` to force it to scale the image.
+to `scale` to force it to scale the image. `localPalette` instructs the gif to
+use a per-frame palette instead of the global gif palette. Defaults to true,
+turning it off may result in smaller gifs and faster write times.
 
 ### GifWriter:close()
 Will close the gif and allow it to finish writing.

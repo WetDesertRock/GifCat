@@ -60,8 +60,9 @@ static int l_gif_frame(lua_State *L) {
   size_t len;
   const char *data = luaL_checklstring(L, 2, &len);
   int delay = luaL_optint(L, 3, self->delay);
+  int localPalette = luaL_optint(L, 4, self->delay);
 
-  jo_gif_frame(&self->gif, (unsigned char*)data, delay, 0);
+  jo_gif_frame(&self->gif, (unsigned char*)data, delay, localPalette);
   return 0;
 }
 static int l_gif_close(lua_State *L) {
