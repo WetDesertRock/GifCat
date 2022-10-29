@@ -18,10 +18,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
-
--- Where can we find the gif.so file?
-local GIFLIB = "./gifcatlib.so"
-
 -- Where is this file?
 local FILE = (...)
 
@@ -189,7 +185,7 @@ if love.arg then -- Are we in the main thread?
   return _
 
 else
-  local gif = assert(package.loadlib(GIFLIB, "luaopen_gifcatlib"))()
+  local gif = require("gifcatlib")
   require("love.image")
   require("love.filesystem")
   local channel = love.thread.getChannel("gif_imagedata")
