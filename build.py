@@ -17,7 +17,8 @@ template = "$compiler $outfile $source $include $link $flags $define"
 
 if platform.system() == "Windows":
     opt["flags"] += " -fpic -shared"
-    opt["link"] += " -lws2_32"
+    opt["link"] += " -lws2_32 -llua51 -Llib" # 
+    opt["outfile"] = "-o gifcatlib.dll"
 
 elif platform.system() == "Darwin":
     opt["flags"] += " -bundle -undefined dynamic_lookup"
